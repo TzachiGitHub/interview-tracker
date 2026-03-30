@@ -1,11 +1,18 @@
 import { createClient } from '@/lib/supabase/server'
 import { signOut } from '@/app/auth/actions'
+import { type Application } from '@/app/applications/actions'
+import ApplicationsClient from './ApplicationsClient'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
+
+  const { data: applications } = await supabase
+    .from('applications')
+    .select('*')
+    .order('created_at', { ascending: false })
 
   return (
     <div className="flex min-h-full flex-col bg-zinc-50 dark:bg-zinc-950">
@@ -34,15 +41,8 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
           My Applications
         </h1>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-          Track and manage your job applications here.
-        </p>
 
-        <div className="mt-8 rounded-xl border border-dashed border-zinc-300 bg-white py-16 text-center dark:border-zinc-700 dark:bg-zinc-900">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            No applications yet. Add your first one to get started.
-          </p>
-        </div>
+        <ApplicationsClient applications={(applications ?? []) as Application[]} />
       </main>
     </div>
   )
